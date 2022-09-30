@@ -1,0 +1,33 @@
+# Mongo DB Controller With NFS Volume
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: mongodbrs
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+     metadata:
+       name: mongodbpod
+       labels:
+         app: mongodb
+     spec:
+       volumes:
+       - name: mongodbvolume   # This need to be mount to the container which will use it to store data 
+         nfs:   # Ip@ of the Nfs server create in aws which will be use as volume
+           server: 172.31.26.48
+           path: /mnt/share   # this path will be sync in all our server
+       containers:
+       - name: mongodbcontainer
+         image: mongo
+         ports:
+         - containerPort: 27017
+         env:
+         - name: MONGO_INITDB_ROOT_USERNAME
+           value: devdb
+         - name: MONGO_INITDB_ROOT_PASSWORD
+           value: devdb@123
+         volumeMounts:
+         - name: mongodbvolume
+           mountPath: /data/db
